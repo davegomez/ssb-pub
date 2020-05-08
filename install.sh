@@ -2,22 +2,33 @@
 
 cd ~
 
-ARCH=`uname -m`
+arch=`uname -i`
+dist=`cat /etc/*-release | grep DISTRIB_ID | cut -d "=" -f2`
+
+if [[ $arch == x86_64* ]]; then
+  ARCH="amd64"
+elif [[ $arch == arm* ]]; then
+  if [[ $dist == Raspbian ]]; then
+    ARCH="armhf"
+  else
+    ARCH="arm64"
+  fi
+fi
 
 # Install docker
 sudo apt-get update
 sudo apt-get remove docker docker-engine docker.io containerd runc
 sudo apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg-agent \
+  software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository -y \
-   "deb [arch=${ARCH}] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+sudo add-apt-repository \
+  "deb [arch=${ARCH}] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable"
 sudo apt update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
@@ -78,11 +89,11 @@ cat > ./create-sbot <<EOF
 MEMORY_LIMIT=$(($(free -b --si | awk '/Mem\:/ { print $2 }') - 200*(10**6)))
 
 docker run -d --name sbot \
-   -v ~/ssb-pub-data/:/home/node/.ssb/ \
-   -p 8008:8008 \
-   --restart unless-stopped \
-   --memory "\$MEMORY_LIMIT" \
-   davegomez/ssb-pub
+  -v ~/ssb-pub-data/:/home/node/.ssb/ \
+  -p 8008:8008 \
+  --restart unless-stopped \
+  --memory "\$MEMORY_LIMIT" \
+  davegomez/ssb-pub
 EOF
 # Make the script executable
 chmod +x ./create-sbot
