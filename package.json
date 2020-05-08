@@ -1,11 +1,28 @@
 {
   "name": "ssb-pub",
   "version": "2.0.0",
-  "description": "easily host your own Secure ScuttleButt (SSB) pub in a docker container",
+  "description": "Easily host your own Secure ScuttleButt (SSB) pub in a docker container",
   "scripts": {
     "build": "docker build -t davegomez/ssb-pub:$(jq -r .version package.json) .",
     "start": "docker run -it --rm davegomez/ssb-pub",
     "publish": "docker push davegomez/ssb-pub"
   },
-  "license": "AGPL-3.0"
+  "engines": {
+    "node": ">= 12.x < 14.x",
+    "npm": ">= 6.x <= 7.x"
+  },
+  "keywords": [
+    "ssb",
+    "pub"
+  ],
+  "author": "David Gomez <dg.dave@gmail.com> (https://davidgomez.dev/)",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davegomez/ssb-pub"
+  },
+  "bugs": {
+    "url": "https://github.com/davegomez/ssb-pub/issues"
+  },
+  "homepage": "https://github.com/davegomez/ssb-pub#readme"
 }
