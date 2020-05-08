@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
         - name: ssb-pub
-          image: ahdinosaur/ssb-pub
+          image: davegomez/ssb-pub
           imagePullPolicy: Always
           livenessProbe:
             exec:

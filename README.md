@@ -136,7 +136,7 @@ systemctl enable docker
 #### (option a) pull image from docker hub
 
 ```shell
-docker pull ahdinosaur/ssb-pub
+docker pull davegomez/ssb-pub
 ```
 
 #### (option b) build image from source
@@ -144,9 +144,9 @@ docker pull ahdinosaur/ssb-pub
 from GitHub:
 
 ```shell
-git clone https://github.com/ahdinosaur/ssb-pub.git
+git clone https://github.com/davegomez/ssb-pub.git
 cd ssb-pub
-docker build -t ahdinosaur/ssb-pub .
+docker build -t davegomez/ssb-pub .
 ```
 
 ### create `sbot` container
@@ -210,7 +210,7 @@ docker run -d --name sbot \
    -p 8008:8008 \
    --restart unless-stopped \
    --memory "\$memory_limit" \
-   ahdinosaur/ssb-pub
+   davegomez/ssb-pub
 EOF
 ```
 
@@ -258,14 +258,14 @@ when `sbot` becomes unhealthy (it will!), we want to kill the container, so it w
 for this situation, we will use [somarat/healer](https://github.com/somarat/healer):
 
 ```shell
-docker pull ahdinosaur/healer
+docker pull davegomez/healer
 ```
 
 ```shell
 docker run -d --name healer \
   -v /var/run/docker.sock:/tmp/docker.sock \
   --restart unless-stopped \
-  ahdinosaur/healer
+  davegomez/healer
 ```
 
 ### ensure containers are always running
@@ -406,7 +406,7 @@ for `healer`
 ### update `ssb-pub` image
 
 ```shell
-docker pull ahdinosaur/ssb-pub
+docker pull davegomez/ssb-pub
 docker stop sbot
 docker rm sbot
 # edit ~/ssb-pub-data/config if necessary
@@ -417,7 +417,7 @@ docker rm sbot
 
 for a `v1` pub owner to update to the latest `v2` version of `ssb-pub`:
 
-1. pull the latest v2 image: `docker pull ahdinosaur/ssb-pub`
+1. pull the latest v2 image: `docker pull davegomez/ssb-pub`
 2. stop sbot container: `docker stop sbot`
 3. remove sbot container: `docker rm sbot`
 4. [create `~/ssb-pub-data/config`](#step-2-setup-ssb-config)
