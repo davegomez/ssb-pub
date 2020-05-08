@@ -3,5 +3,10 @@ image: ubuntu-20-04-x64
 min_size: 1gb
 config:
   #cloud-config
+  users:
+    - name: ssb
+      groups: sudo
+      shell: /bin/bash
+      sudo: ['ALL=(ALL) NOPASSWD:ALL']
   runcmd:
     - curl -fsSL https://raw.githubusercontent.com/davegomez/ssb-pub/master/install.sh | bash -
