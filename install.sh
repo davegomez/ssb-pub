@@ -2,32 +2,44 @@
 
 cd ~
 
-#
-# install docker
-#
+ARCH=`uname -m`
+
+# Install docker
+sudo apt-get update
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository -y \
+   "deb [arch=${ARCH}] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
 sudo apt update
-sudo apt install -y curl dnsutils apt-transport-https ca-certificates software-properties-common
-wget https://download.docker.com/linux/debian/gpg -O docker-gpg
-sudo apt-key add docker-gpg
-echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee -a /etc/apt/sources.list.d/docker.list
-sudo apt update
-sudo apt install -y docker-ce
-sudo systemctl start docker
-sudo systemctl enable docker
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker 
+
+sudo service docker start
 
 #
-# install ssb-pub image
+# Install ssb-pub image
 #
 docker pull davegomez/ssb-pub
 
 #
-# create sbot container
+# Create sbot container
 #
 mkdir ~/ssb-pub-data
 chown -R 1000:1000 ~/ssb-pub-data
 
 #
-# setup sbot config
+# Setup sbot config
 #
 EXTERNAL=$(dig +short myip.opendns.com @resolver1.opendns.com)
 cat > ~/ssb-pub-data/config <<EOF
@@ -56,39 +68,39 @@ cat > ~/ssb-pub-data/config <<EOF
 EOF
 
 #
-# create sbot container
+# Create sbot container
 #
 
-# create ./create-sbot script
+# Create ./create-sbot script
 cat > ./create-sbot <<EOF
 #!/bin/bash
 
-memory_limit=$(($(free -b --si | awk '/Mem\:/ { print $2 }') - 200*(10**6)))
+MEMORY_LIMIT=$(($(free -b --si | awk '/Mem\:/ { print $2 }') - 200*(10**6)))
 
 docker run -d --name sbot \
    -v ~/ssb-pub-data/:/home/node/.ssb/ \
    -p 8008:8008 \
    --restart unless-stopped \
-   --memory "\$memory_limit" \
+   --memory "\$MEMORY_LIMIT" \
    davegomez/ssb-pub
 EOF
-# make the script executable
+# Make the script executable
 chmod +x ./create-sbot
-# run the script
+# Run the script
 ./create-sbot
 
-# create ./sbot script
+# Create ./sbot script
 cat > ./sbot <<EOF
 #!/bin/sh
 
 docker exec -it sbot sbot "\$@"
 EOF
 
-# make the script executable
+# Make the script executable
 chmod +x ./sbot
 
 #
-# setup auto-healer
+# Setup auto-healer
 #
 docker pull davegomez/healer
 docker run -d --name healer \
@@ -96,6 +108,10 @@ docker run -d --name healer \
   --restart unless-stopped \
   davegomez/healer
 
-# ensure containers are always running
-printf '#!/bin/sh\n\ndocker start sbot\n' | tee /etc/cron.hourly/sbot && chmod +x /etc/cron.hourly/sbot
-printf '#!/bin/sh\n\ndocker start healer\n' | tee /etc/cron.hourly/healer && chmod +x /etc/cron.hourly/healer
+# Ensure containers are always running
+printf '#!/bin/sh\n\ndocker start sbot\n' \
+  | tee /etc/cron.hourly/sbot \
+  && chmod +x /etc/cron.hourly/sbot
+printf '#!/bin/sh\n\ndocker start healer\n' \
+  | tee /etc/cron.hourly/healer \
+  && chmod +x /etc/cron.hourly/healer
