@@ -2,39 +2,48 @@
 
 cd ~
 
-arch=`uname -i`
-dist=`cat /etc/*-release | grep DISTRIB_ID | cut -d "=" -f2`
+ARCH=`uname -i`
+DIST=`lsb_release -is | tr '[:upper:]' '[:lower:]'`
+CODENAME=`lsb_release -cs`
 
-if [[ $arch == x86_64* ]]; then
+if [[ $ARCH == x86_64* ]]; then
   ARCH="amd64"
-elif [[ $arch == arm* ]]; then
-  if [[ $dist == Raspbian ]]; then
+elif [[ $ARCH == arm* ]]; then
+  if [[ $DIST == raspbian ]]; then
     ARCH="armhf"
   else
     ARCH="arm64"
   fi
 fi
 
+#
 # Install docker
-sudo apt-get update
-sudo apt-get remove docker docker-engine docker.io containerd runc
-sudo apt-get install -y \
+#
+sudo apt update
+sudo apt remove docker docker-engine docker.io containerd runc
+sudo apt install -y \
   apt-transport-https \
   ca-certificates \
   curl \
   gnupg-agent \
   software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-  "deb [arch=${ARCH}] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
-sudo apt update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+curl -fsSL https://download.docker.com/linux/$DIST/gpg | sudo apt-key add -
+
+# Don't add Docker repository if it is Ubuntu 20.04 LTS
+# TODO: remove once the repository is available
+if [[ $CODENAME != focal ]]; then
+  sudo add-apt-repository \
+    "deb [arch=${ARCH}] https://download.docker.com/linux/${DIST} \
+    ${CODENAME} \
+    stable"
+  sudo apt update
+fi
+
+sudo apt install -y docker-ce docker-ce-cli containerd.io
 
 sudo groupadd docker
 sudo usermod -aG docker $USER
-newgrp docker 
+newgrp docker
 
 sudo service docker start
 
