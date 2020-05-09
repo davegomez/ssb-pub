@@ -4,9 +4,16 @@ min_size: 1gb
 config:
   #cloud-config
   users:
-    - name: ssb
+    - name: publican
       groups: sudo
       shell: /bin/bash
       sudo: ['ALL=(ALL) NOPASSWD:ALL']
   runcmd:
-    - curl -fsSL https://raw.githubusercontent.com/davegomez/ssb-pub/master/install.sh | bash -
+    - mkdir /home/publican/.ssh
+    - chmod 700 /home/publican/.ssh
+    - chown publican:publican /home/publican/.ssh
+    - touch /home/publican/.ssh/authorized_keys
+    - chmod 600 /home/publican/.ssh/authorized_keys
+    - chown publican:publican /home/publican/.ssh/authorized_keys
+    - cat /root/.ssh/authorized_keys >> /home/publican/.ssh/authorized_keys
+    - su -c 'curl -fsSL https://raw.githubusercontent.com/davegomez/ssb-pub/master/install.sh | bash -' - publican

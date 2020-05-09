@@ -4,7 +4,6 @@ cd ~
 
 ARCH=`uname -i`
 DIST=`lsb_release -is | tr '[:upper:]' '[:lower:]'`
-CODENAME=`lsb_release -cs`
 
 if [[ $ARCH == x86_64* ]]; then
   ARCH="amd64"
@@ -19,27 +18,22 @@ fi
 #
 # Install docker
 #
-sudo apt update
-sudo apt remove docker docker-engine docker.io containerd runc
-sudo apt install -y \
+sudo apt-get update
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get install -y \
   apt-transport-https \
   ca-certificates \
   curl \
   gnupg-agent \
   software-properties-common
-curl -fsSL https://download.docker.com/linux/$DIST/gpg | sudo apt-key add -
-
-# Don't add Docker repository if it is Ubuntu 20.04 LTS
-# TODO: remove once the repository is available
-if [[ $CODENAME != focal ]]; then
-  sudo add-apt-repository \
-    "deb [arch=${ARCH}] https://download.docker.com/linux/${DIST} \
-    ${CODENAME} \
-    stable"
-  sudo apt update
-fi
-
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+# curl -fsSL https://download.docker.com/linux/$DIST/gpg | sudo apt-key add -
+# sudo add-apt-repository \
+#  "deb [arch=${ARCH}] https://download.docker.com/linux/${DIST} \
+#  $(lsb_release -cs) \
+#  stable"
+# sudo apt-get update
+# sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y docker.io
 
 sudo groupadd docker
 sudo usermod -aG docker $USER
@@ -122,16 +116,16 @@ chmod +x ./sbot
 #
 # Setup auto-healer
 #
-docker pull davegomez/healer
+docker pull ahdinosaur/healer
 docker run -d --name healer \
   -v /var/run/docker.sock:/tmp/docker.sock \
   --restart unless-stopped \
-  davegomez/healer
+  ahdinosaur/healer
 
 # Ensure containers are always running
 printf '#!/bin/sh\n\ndocker start sbot\n' \
-  | tee /etc/cron.hourly/sbot \
-  && chmod +x /etc/cron.hourly/sbot
+  | sudo tee /etc/cron.hourly/sbot \
+  && sudo chmod +x /etc/cron.hourly/sbot
 printf '#!/bin/sh\n\ndocker start healer\n' \
-  | tee /etc/cron.hourly/healer \
-  && chmod +x /etc/cron.hourly/healer
+  | sudo tee /etc/cron.hourly/healer \
+  && sudo chmod +x /etc/cron.hourly/healer
